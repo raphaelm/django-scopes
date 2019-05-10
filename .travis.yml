@@ -1,0 +1,49 @@
+language: python
+install:
+  - pip install tox
+dist: xenial
+sudo: required
+before_script:
+  - ./.travis-install-db.sh
+script:
+  - tox
+services:
+  - docker
+  - postgresql
+matrix:
+  include:
+    - python: 3.6
+      env: TOXENV=py36-django21 TOXDB=mysql DB=mysql:5.7
+    - python: 3.7
+      env: TOXENV=py37-django22 TOXDB=mysql DB=mysql:5.7
+    - python: 3.4
+      env: TOXENV=py34-django20 TOXDB=mariadb DB=mariadb:10.3
+    - python: 3.7
+      env: TOXENV=py37-django22 TOXDB=mariadb DB=mariadb:10.3
+    - python: 3.4
+      env: TOXENV=py34-django20 TOXDB=postgres
+    - python: 3.5
+      env: TOXENV=py35-django20 TOXDB=postgres
+    - python: 3.5
+      env: TOXENV=py35-django21 TOXDB=postgres
+    - python: 3.6
+      env: TOXENV=py36-django20 TOXDB=postgres
+    - python: 3.6
+      env: TOXENV=py36-django21 TOXDB=postgres
+    - python: 3.7
+      env: TOXENV=py37-django21 TOXDB=postgres
+    - python: 3.7
+      env: TOXENV=py37-django22 TOXDB=postgres
+    - python: 3.4
+      env: TOXENV=py34-django20 TOXDB=sqlite
+    - python: 3.6
+      env: TOXENV=py36-django21 TOXDB=sqlite
+    - python: 3.7
+      env: TOXENV=py37-django22 TOXDB=sqlite
+    - python: 3.6
+      env: TOXENV=coverage TOXDB=sqlite
+    - python: 3.6
+      env: TOXENV=style TOXDB=sqlite
+addons:
+  postgresql: "9.4"
+

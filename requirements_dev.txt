@@ -1,0 +1,7 @@
+pytest
+pytest-django
+tox
+coverage
+codecov
+isort
+flake8

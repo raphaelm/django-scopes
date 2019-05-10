@@ -96,9 +96,30 @@ system:
 	with scope(site=None):
 		Comment.objects.all()
 
-This also works correclt nested within a previously defined scope.
+This also works correctly nested within a previously defined scope.
 
 Sounds cumbersome to put those ``with`` statements everywhere? Maybe not at all: You probably
 already have a middleware that determines the site (or tenant, in general) for every request
 based on URL or logged in user, and you can easily use it there to just automatically wrap
 it around all your tenant-specific views.
+
+Functions can opt out of this behavior by using
+
+    from django_scopes import scopes_disabled
+
+    @scopes_disabled
+    def fun(…):
+        …
+
+Caveats
+-------
+
+We want to enforce scoping by default to stay safe, which unfortunately
+breaks the Django test runner as well as pytest-django. For now, we haven't found
+a better solution than to monkeypatch it:
+
+    from django.test import utils
+    from django_scopes import scopes_disabled
+    
+    utils.setup_databases = scopes_disabled(utils.setup_databases)
+

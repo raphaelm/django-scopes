@@ -1,0 +1,13 @@
+__pycache__/
+build/
+dist/
+*.egg-info
+env
+.idea/
+*.sqlite3
+.cache
+.tox
+htmlcov/
+*.pyc
+.coverage
+
