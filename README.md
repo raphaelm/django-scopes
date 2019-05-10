@@ -28,18 +28,20 @@ Usage
 Let's assume we have a multi-tenant blog application consisting of the three models ``Site``,
 ``Post``, and ``Comment``:
 
-	from django.db import models
+```python
+from django.db import models
 
-	class Site(models.Model):
-		name = models.CharField(…)
+class Site(models.Model):
+	name = models.CharField(…)
 
-	class Post(models.Model):
-		site = models.ForeignKey(Site, …)
-		title = models.CharField(…)
+class Post(models.Model):
+	site = models.ForeignKey(Site, …)
+	title = models.CharField(…)
 
-	class Comment(models.Model):
-		post = models.ForeignKey(Post, …)
-		text = models.CharField(…)
+class Comment(models.Model):
+	post = models.ForeignKey(Post, …)
+	text = models.CharField(…)
+```
 
 In this case, our application will probably be full of statements like
 ``Post.objects.filter(site=current_site)``, ``Comment.objects.filter(post__site=current_site)``,
@@ -48,19 +50,21 @@ engourage you to still write these queries with your custom permission-based fil
 we add a custom model manager that has knowledge about posts and comments being part of a
 tenant scope:
 
-	from django_scopes import ScopedManager
+```python
+from django_scopes import ScopedManager
 
-	class Post(models.Model):
-		site = models.ForeignKey(Site, …)
-		title = models.CharField(…)
+class Post(models.Model):
+	site = models.ForeignKey(Site, …)
+	title = models.CharField(…)
 
-		objects = ScopedManager(site='site')
+	objects = ScopedManager(site='site')
 
-	class Comment(models.Model):
-		post = models.ForeignKey(Post, …)
-		text = models.CharField(…)
+class Comment(models.Model):
+	post = models.ForeignKey(Post, …)
+	text = models.CharField(…)
 
-		objects = ScopedManager(site='post__site')
+	objects = ScopedManager(site='post__site')
+```
 
 The keyword argument ``site`` defines the name of our **scope dimension**, while the string
 ``'site'`` or ``'post__site'`` tells us how we can look up the value for this scope dimension
@@ -81,10 +85,12 @@ generic view definitions.
 You can now use our context manager to specifically allow queries to a specific blogging site,
 e.g.:
 
-	from django_scopes import scope
+```python
+from django_scopes import scope
 
-	with scope(site=current_site):
-		Comment.objects.all()
+with scope(site=current_site):
+	Comment.objects.all()
+```
 
 This will *automatically* add a ``.filter(post__site=current_site)`` to all of your queries.
 Again, we recommend that you *still* write them explicitly, but it is nice to know to have a
@@ -93,8 +99,10 @@ safeguard.
 Of course, you can still explicitly enter a non-scoped context to access all the objects in your
 system:
 
-	with scope(site=None):
-		Comment.objects.all()
+```python
+with scope(site=None):
+	Comment.objects.all()
+```
 
 This also works correctly nested within a previously defined scope.
 
@@ -105,11 +113,13 @@ it around all your tenant-specific views.
 
 Functions can opt out of this behavior by using
 
-    from django_scopes import scopes_disabled
+```python
+from django_scopes import scopes_disabled
 
-    @scopes_disabled
-    def fun(…):
-        …
+@scopes_disabled
+def fun(…):
+    …
+```
 
 Caveats
 -------
@@ -118,8 +128,9 @@ We want to enforce scoping by default to stay safe, which unfortunately
 breaks the Django test runner as well as pytest-django. For now, we haven't found
 a better solution than to monkeypatch it:
 
-    from django.test import utils
-    from django_scopes import scopes_disabled
+```python
+from django.test import utils
+from django_scopes import scopes_disabled
     
-    utils.setup_databases = scopes_disabled(utils.setup_databases)
-
+utils.setup_databases = scopes_disabled(utils.setup_databases)
+```
