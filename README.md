@@ -156,7 +156,7 @@ a better solution than to monkeypatch it:
 
 ```python
 from django.test import utils
-from django_scopes import scopes_disabled()
+from django_scopes import scopes_disabled
     
-utils.setup_databases = scopes_disabled(utils.setup_databases)
+utils.setup_databases = scopes_disabled()(utils.setup_databases)
 ```
