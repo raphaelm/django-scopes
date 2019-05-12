@@ -68,10 +68,14 @@ def ScopedManager(**scopes):
             if missing_scopes:
                 return DisabledQuerySet(self.model, using=self._db, missing_scopes=missing_scopes)
             else:
-                return super().get_queryset().filter(**{
-                    scopes[dimension]: current_scope[dimension] for dimension in required_scopes
-                    if current_scope[dimension] is not None
-                })
+                filter_kwargs = {}
+                for dimension in required_scopes:
+                    current_value = current_scope[dimension]
+                    if isinstance(current_value, (list, tuple)):
+                        filter_kwargs[scopes[dimension] + '__in'] = current_value
+                    elif current_value is not None:
+                        filter_kwargs[scopes[dimension]] = current_value
+                return super().get_queryset().filter(**filter_kwargs)
 
         def all(self):
             a = super().all()

@@ -121,4 +121,12 @@ def test_scope_nested(site1, site2, comment1, comment2):
         assert list(Comment.objects.all()) == [comment1]
 
 
+@pytest.mark.django_db
+def test_scope_multisite(site1, site2, comment1, comment2):
+    with scope(site=[site1]):
+        assert list(Comment.objects.all()) == [comment1]
+    with scope(site=[site1, site2]):
+        assert list(Comment.objects.all()) == [comment1, comment2]
+
+
 # TODO: Multiple dimensions

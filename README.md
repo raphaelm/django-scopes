@@ -118,7 +118,13 @@ with scope(site=None):
 	Comment.objects.all()
 ```
 
-This also works correctly nested within a previously defined scope.
+This also works correctly nested within a previously defined scope. You can also activate multiple
+values at once:
+
+```python
+with scope(site=[site1, site2]):
+	Comment.objects.all()
+```
 
 Sounds cumbersome to put those ``with`` statements everywhere? Maybe not at all: You probably
 already have a middleware that determines the site (or tenant, in general) for every request
