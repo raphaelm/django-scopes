@@ -21,3 +21,10 @@ class Comment(models.Model):
     text = models.TextField()
 
     objects = ScopedManager(site='post__site')
+
+
+class Bookmark(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    userid = models.IntegerField()
+
+    objects = ScopedManager(site='post__site', user_id='userid')
