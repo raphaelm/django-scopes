@@ -160,3 +160,31 @@ from django_scopes import scopes_disabled
     
 utils.setup_databases = scopes_disabled()(utils.setup_databases)
 ```
+
+When using model forms, Django will automatically generate choice fields on foreign
+keys and many-to-many fields. This won't work here, so we supply helper field
+classes ``SafeModelChoiceField`` and ``SafeModelMultipleChoiceField`` that use an
+empty queryset instead:
+
+```python
+from django.forms import ModelForm
+from django_scopes.forms import SafeModelChoiceField
+
+class PostMethodForm(ModelForm):
+    class Meta:
+        model = Comment
+        field_classes = {
+            'post': SafeModelChoiceField,
+        }
+```
+
+We noticed that ``django-filter`` also runs some queries when generating filtersets.
+Currently, our best workaround is this:
+
+```python
+from django_scopes import scopes_disabled
+
+with scopes_disabled():
+    class CommentFilter(FilterSet):
+        …
+```
