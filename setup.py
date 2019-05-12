@@ -13,7 +13,7 @@ except:
     long_description = ''
 
 try:
-    from jsonfallback import version
+    from django_scopes import version
 except ImportError:
     version = '?'
 
