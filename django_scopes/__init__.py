@@ -2,7 +2,7 @@ from .exceptions import ScopeError
 from .manager import ScopedManager
 from .state import get_scope, scope, scopes_disabled
 
-version = '1.0.1'
+version = '1.1.0'
 
 __all__ = [
     'version',
