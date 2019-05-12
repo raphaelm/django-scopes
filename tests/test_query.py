@@ -51,6 +51,11 @@ def test_require_scope():
 
 
 @pytest.mark.django_db
+def test_none_works():
+    assert list(Post.objects.none()) == []
+
+
+@pytest.mark.django_db
 def test_require_scope_survive_clone():
     Post.objects.using('default')
     with pytest.raises(ScopeError):
