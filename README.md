@@ -1,6 +1,8 @@
 django-scopes
 =============
 
+[![Build Status](https://travis-ci.com/raphaelm/django-scopes.svg?branch=master)](https://travis-ci.com/raphaelm/django-scopes) [![codecov](https://codecov.io/gh/raphaelm/django-scopes/branch/master/graph/badge.svg)](https://codecov.io/gh/raphaelm/django-scopes) ![PyPI](https://img.shields.io/pypi/v/django-scopes.svg)
+
 Motivation
 ----------
 
@@ -14,13 +16,25 @@ applications is that we leak data across tenants.
 
 It's so easy to forget that one ``.filter`` call and it's hard to catch these errors
 in both manual and automated testing, since you usually do not have a lot of clients
-in your development setup. Leaving [radical, database-sependent ideas](https://github.com/bernardopires/django-tenant-schemas)
+in your development setup. Leaving [radical, database-dependent ideas](https://github.com/bernardopires/django-tenant-schemas)
 aside, there aren't many approaches available in the ecosystem to prevent these mistakes
 from happening aside from rigorous code review.
 
 We'd like to propose this module as a flexible line of defense. It is meant to have
 little impact on your day-to-day work, but act as a safeguard in case you build a
 faulty query.
+
+Installation
+------------
+
+There's nothing required apart from a simple
+
+	pip install django-scopes
+	
+Compatibility
+-------------
+
+This library is tested against **Python 3.5-3.7** and **Django 2.1-2.2**.
 
 Usage
 -----
