@@ -20,28 +20,22 @@ class DisabledQuerySet(models.QuerySet):
         c.missing_scopes = self.missing_scopes
         return c
 
-    def __repr__(self):
-        if self.query.is_empty():
-            return super().__repr__()
-        self.error()
-
-    def __len__(self):
-        if self.query.is_empty():
-            return super().__len__()
-        self.error()
-
-    def __iter__(self):
-        if self.query.is_empty():
-            return super().__iter__()
-        self.error()
-
-    def __getitem__(self, *args, **kwargs):
-        if self.query.is_empty():
-            return super().__getitem__(*args, **kwargs)
-        self.error()
+    def none(self):
+        c = models.QuerySet(model=self.model, query=self.query.chain(), using=self._db, hints=self._hints)
+        c._sticky_filter = self._sticky_filter
+        c._for_write = self._for_write
+        c._prefetch_related_lookups = self._prefetch_related_lookups[:]
+        c._known_related_objects = self._known_related_objects
+        c._iterable_class = self._iterable_class
+        c._fields = self._fields
+        return c.none()
 
     # We protect disable everything except for .using(), .none() and .create()
     __bool__ = error
+    __getitem__ = error
+    __iter__ = error
+    __len__ = error
+    __erpr__ = error
     all = error
     aggregate = error
     annotate = error

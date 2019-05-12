@@ -53,6 +53,8 @@ def test_require_scope():
 @pytest.mark.django_db
 def test_none_works():
     assert list(Post.objects.none()) == []
+    assert list(Post.objects.none().all()) == []
+    assert list(Post.objects.none().filter()) == []
 
 
 @pytest.mark.django_db
