@@ -20,7 +20,7 @@ class DisabledQuerySet(models.QuerySet):
         c.missing_scopes = self.missing_scopes
         return c
 
-    # We protect disable everything except for .none()
+    # We protect disable everything except for .using(), .none() and .create()
     __len__ = error
     __bool__ = error
     __getitem__ = error

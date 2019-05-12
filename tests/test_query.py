@@ -52,8 +52,18 @@ def test_require_scope():
 
 @pytest.mark.django_db
 def test_require_scope_survive_clone():
+    Post.objects.using('default')
+    with pytest.raises(ScopeError):
+        Post.objects.using('default').all()
     with pytest.raises(ScopeError):
         Post.objects.all().all().all().count()
+
+
+@pytest.mark.django_db
+def test_require_scope_iterate():
+    Post.objects.using('default')
+    with pytest.raises(ScopeError):
+        list(Post.objects.using('default'))
 
 
 @pytest.mark.django_db
