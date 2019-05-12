@@ -3,7 +3,7 @@ import pytest
 from django.db import models
 from django.db.models import Value
 
-from django_scopes import scope, ScopeError, get_scope
+from django_scopes import scope, ScopeError, get_scope, scopes_disabled
 from .testapp.models import Site, Post, Comment
 
 
@@ -128,5 +128,28 @@ def test_scope_multisite(site1, site2, comment1, comment2):
     with scope(site=[site1, site2]):
         assert list(Comment.objects.all()) == [comment1, comment2]
 
+
+@pytest.mark.django_db
+def test_scope_as_decorator(site1, site2, comment1, comment2):
+    @scope(site=site1)
+    def inner():
+        assert list(Comment.objects.all()) == [comment1]
+
+    inner()
+
+
+@pytest.mark.django_db
+def test_scope_opt_out(site1, site2, comment1, comment2):
+    with scopes_disabled():
+        assert list(Comment.objects.all()) == [comment1, comment2]
+
+
+@pytest.mark.django_db
+def test_scope_opt_out_decorator(site1, site2, comment1, comment2):
+    @scopes_disabled()
+    def inner():
+        assert list(Comment.objects.all()) == [comment1, comment2]
+
+    inner()
 
 # TODO: Multiple dimensions

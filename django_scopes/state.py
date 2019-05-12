@@ -4,12 +4,10 @@ from threading import local
 state = local()
 
 
-def scopes_disabled(f):
-    def wrapper(*args, **kwargs):
-        with scope(_enabled=False):
-            return f(*args, **kwargs)
-
-    return wrapper
+@contextmanager
+def scopes_disabled():
+    with scope(_enabled=False):
+        yield
 
 
 @contextmanager

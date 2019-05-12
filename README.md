@@ -136,7 +136,13 @@ Functions can opt out of this behavior by using
 ```python
 from django_scopes import scopes_disabled
 
-@scopes_disabled
+
+with scopes_disabled():
+    …
+
+# OR
+
+@scopes_disabled()
 def fun(…):
     …
 ```
@@ -150,7 +156,7 @@ a better solution than to monkeypatch it:
 
 ```python
 from django.test import utils
-from django_scopes import scopes_disabled
+from django_scopes import scopes_disabled()
     
 utils.setup_databases = scopes_disabled(utils.setup_databases)
 ```

@@ -9,4 +9,4 @@ import django
 
 django.setup()
 
-utils.setup_databases = scopes_disabled(utils.setup_databases)
+utils.setup_databases = scopes_disabled()(utils.setup_databases)
