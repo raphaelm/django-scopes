@@ -30,7 +30,7 @@ Installation
 There's nothing required apart from a simple
 
 	pip install django-scopes
-	
+
 Compatibility
 -------------
 
@@ -96,6 +96,8 @@ Now, with this custom manager, all queries are banned at first:
 The only thing that will work is ``Comment.objects.none()``, which is useful e.g. for Django
 generic view definitions.
 
+### Activate scopes in contexts
+
 You can now use our context manager to specifically allow queries to a specific blogging site,
 e.g.:
 
@@ -147,6 +149,26 @@ def fun(…):
     …
 ```
 
+### Custom manager classes
+
+If you were already using a custom manager class, you can pass it to a `ScopedManager` with the `_manager_class`
+keyword like this:
+from django.db import models
+
+```python
+from django.db import models
+
+class SiteManager(models.Manager):
+
+	def get_queryset(self):
+		return super().get_queryset().exclude(name__startswith='test')
+
+class Site(models.Model):
+	name = models.CharField(…)
+
+	objects = ScopedManager(site='site', _manager_class=SiteManager)
+```
+
 Caveats
 -------
 
@@ -157,7 +179,7 @@ a better solution than to monkeypatch it:
 ```python
 from django.test import utils
 from django_scopes import scopes_disabled
-    
+
 utils.setup_databases = scopes_disabled()(utils.setup_databases)
 ```
 

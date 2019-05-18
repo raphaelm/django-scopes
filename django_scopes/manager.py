@@ -64,10 +64,10 @@ class DisabledQuerySet(models.QuerySet):
     values_list = error
 
 
-def ScopedManager(**scopes):
+def ScopedManager(_manager_class=models.Manager, **scopes):
     required_scopes = set(scopes.keys())
 
-    class Manager(models.Manager):
+    class Manager(_manager_class):
         def __init__(self):
             super().__init__()
 
