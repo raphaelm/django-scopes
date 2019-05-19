@@ -28,6 +28,11 @@ def post2(site2):
 
 
 @pytest.fixture
+def deleted_post(site1):
+    return Post.objects.create(site=site1, title="deleted")
+
+
+@pytest.fixture
 def comment1(post1):
     return Comment.objects.create(post=post1, text="I'm so sorry.")
 
@@ -144,6 +149,12 @@ def test_scope_multisite(site1, site2, comment1, comment2):
     with scope(site=[site1, site2]):
         assert list(Comment.objects.all()) == [comment1, comment2]
         assert get_scope() == {'site': [site1, site2], '_enabled': True}
+
+
+@pytest.mark.django_db
+def test_scope_uses_manager_class(site1, post1, deleted_post):
+    with scope(site=site1):
+        assert deleted_post not in site1.post_set.all()
 
 
 @pytest.mark.django_db
