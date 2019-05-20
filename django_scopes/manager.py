@@ -11,8 +11,8 @@ class DisabledQuerySet(models.QuerySet):
         super().__init__(*args, **kwargs)
 
     def error(self, *args, **kwargs):
-        raise ScopeError("A scope on dimension(s) {} needs to be active for this query.".format(
-            ', '.join(self.missing_scopes)
+        raise ScopeError("A scope on dimension(s) {} needs to be active for this {} query.".format(
+            ', '.join(self.missing_scopes), self.model.__name__
         ))
 
     def _clone(self):
