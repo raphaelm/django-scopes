@@ -5,12 +5,8 @@ from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the relevant file
-try:
-    with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-        long_description = f.read()
-except:
-    long_description = ''
+with open('README.md') as fh:
+    long_description = fh.read()
 
 try:
     from django_scopes import version
@@ -22,6 +18,7 @@ setup(
     version=version,
     description='Scope querys in multi-tenant django applications',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/raphaelm/django-scopes',
     author='Raphael Michel',
     author_email='mail@raphaelmichel.de',
