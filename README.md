@@ -172,6 +172,8 @@ class Site(models.Model):
 Caveats
 -------
 
+### Testing
+
 We want to enforce scoping by default to stay safe, which unfortunately
 breaks the Django test runner as well as pytest-django. For now, we haven't found
 a better solution than to monkeypatch it:
@@ -182,6 +184,42 @@ from django_scopes import scopes_disabled
 
 utils.setup_databases = scopes_disabled()(utils.setup_databases)
 ```
+
+You can wrap many of your test and fixtures inside ``scopes_disabled()`` as well, but we wouldn't advise to do it with all of them: Especially when writing higher-level functional tests, such as tests using Django's test client or tests testing celery tasks, you should make sure that your application code runs as it does in production. Therefore, writing tests for a project using django-scopes often looks like this:
+
+```python
+@pytest.mark.django_db
+def test_a_view(client):
+    with scopes_disabled():
+        u = User.objects.create(...)
+    client.post('/user/{}/delete'.format(u.pk))
+    with scopes_disabled():
+    	assert not User.objects.filter(pk=u.pk).exists()
+```
+
+If you want to disable scoping or activate a certain scope whenever a specific fixture is used, you can do so in py.test like this:
+
+```python
+@pytest.fixture
+def site():
+    s = Site.objects.create(...)
+    with scope(site=s):
+        yield s
+```
+
+When trying to port a project with *lots* of fixtures, it can be helpful to roll a small py.test plugin in your ``conftest.py`` to just globally disable scoping for all fixtures which are not yielding fixtures (like the one above):
+
+```python
+@pytest.hookimpl(hookwrapper=True)
+def pytest_fixture_setup(fixturedef, request):
+    if inspect.isgeneratorfunction(fixturedef.func):
+        yield
+    else:
+        with scopes_disabled():
+            yield
+```
+
+### ModelForms
 
 When using model forms, Django will automatically generate choice fields on foreign
 keys and many-to-many fields. This won't work here, so we supply helper field
@@ -200,6 +238,8 @@ class PostMethodForm(ModelForm):
         }
 ```
 
+### django-filter
+
 We noticed that ``django-filter`` also runs some queries when generating filtersets.
 Currently, our best workaround is this:
 
@@ -210,3 +250,18 @@ with scopes_disabled():
     class CommentFilter(FilterSet):
         …
 ```
+
+### Uniqueness
+
+One subtle class of bug that can be introduced by adding django-scopes to your project is if you try to generate unique identifiers in your database with a pattern like this:
+
+```python
+
+def generate_unique_value():
+    while True:
+        key = _generate_random_key()
+        if not Model.objects.filter(key=key).exists():
+            return key
+```
+
+If you want keys to be unique across tenants, make sure to wrap such functions with ``scopes_disabled()``!
