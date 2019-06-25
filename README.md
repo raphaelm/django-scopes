@@ -265,3 +265,11 @@ def generate_unique_value():
 ```
 
 If you want keys to be unique across tenants, make sure to wrap such functions with ``scopes_disabled()``!
+
+## Further reading
+
+If you'd like to read more about the practical use of django-scopes, there is a [blog
+post](https://behind.pretix.eu/2019/06/17/scopes/) about its introduction in the [pretix](https://pretix.eu) project.
+
+[Here](https://rixx.de/blog/using-the-django-shell-with-django-scopes/) is a guide on how to write a ``shell_scoped``
+django-admin command to provide a scoped Django shell.
