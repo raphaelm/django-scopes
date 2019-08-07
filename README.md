@@ -266,6 +266,19 @@ def generate_unique_value():
 
 If you want keys to be unique across tenants, make sure to wrap such functions with ``scopes_disabled()``!
 
+When using a [ModelForm](https://docs.djangoproject.com/en/dev/topics/forms/modelforms/) (or [class based view](https://docs.djangoproject.com/en/dev/topics/class-based-views/)) to create or update a model, unexpected IntegrityErrors may occur. ModelForms perform a uniqueness check before actually saving the model. If that check runs in a scoped context, it cannot find conflicting instances, leading to an IntegrityErrors once the actual `.save()` happens. To combat this, wrap the call in ``scopes_disabled()``.
+
+```python
+class Site(models.Model):
+    name = models.CharField(unique=True, …)
+
+    # (...)
+
+    def validate_unique(self, *args, **kwargs):
+        with scopes_disabled():
+            super().validate_unique(*args, **kwargs)
+```
+
 ## Further reading
 
 If you'd like to read more about the practical use of django-scopes, there is a [blog
