@@ -169,6 +169,25 @@ class Site(models.Model):
 	objects = ScopedManager(site='site', _manager_class=SiteManager)
 ```
 
+
+### Scoping the User model
+
+Assume you've got two models `User` and `Post`. Using the examples above, you can ensure that users only ever see their own diary posts. But how about leaking other users to the currently logged in user? If you application doesn't have much (or any) interaction between users, you can scope the user model. Please note that you'll need a [custom user model](https://docs.djangoproject.com/en/dev/topics/auth/customizing/#specifying-a-custom-user-model). Which base classes your user and manager work off will very between projects.
+
+```python
+class User(AbstractUser):
+	objects = ScopedManager(user='pk', _manager_class=UserManager)
+
+	# (...)
+```
+
+Activating the scope comes with a little caveat - you need to use the users primary key, not the whole object:
+
+```python
+with scope(user=request.user.pk):
+	# do something :)
+```
+
 Caveats
 -------
 
