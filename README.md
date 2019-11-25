@@ -149,6 +149,10 @@ def fun(…):
     …
 ```
 
+Please note that django-scopes is also active during migrations, so if you are writing a
+data migration – or have written one in the past! – you'll have to add appropriate scoping
+or use the ``scopes_disabled`` context.
+
 ### Custom manager classes
 
 If you were already using a custom manager class, you can pass it to a `ScopedManager` with the `_manager_class`
