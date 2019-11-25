@@ -191,6 +191,11 @@ with scope(user=request.user.pk):
 Caveats
 -------
 
+### Admin
+
+django-scopes is not compatible with the django admin out of the box, integration requires a
+custom middleware. (If you write one, please open a PR to include it in this package!)
+
 ### Testing
 
 We want to enforce scoping by default to stay safe, which unfortunately
