@@ -3,5 +3,5 @@ pytest-django
 tox
 coverage
 codecov
-isort
+isort==4.3.4
 flake8
