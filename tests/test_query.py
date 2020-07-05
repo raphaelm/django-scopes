@@ -1,10 +1,9 @@
-import django
 import pytest
-from django.db import models
-from django.db.models import Value
+from django.db.models import IntegerField, Value
 
-from django_scopes import scope, ScopeError, get_scope, scopes_disabled
-from .testapp.models import Site, Post, Comment, Bookmark
+from django_scopes import ScopeError, get_scope, scope, scopes_disabled
+
+from .testapp.models import Bookmark, Comment, Post, Site
 
 
 @pytest.fixture
@@ -111,9 +110,9 @@ def test_scope_keep_filter(site1, site2, post1, post2):
         Post.objects.all()
 
     with scope(site=site1):
-        assert list(Post.objects.annotate(c=Value(3, output_field=models.IntegerField())).distinct().all()) == [post1]
+        assert list(Post.objects.annotate(c=Value(3, output_field=IntegerField())).distinct().all()) == [post1]
     with scope(site=site2):
-        assert list(Post.objects.annotate(c=Value(3, output_field=models.IntegerField())).distinct().all()) == [post2]
+        assert list(Post.objects.annotate(c=Value(3, output_field=IntegerField())).distinct().all()) == [post2]
 
 
 @pytest.mark.django_db

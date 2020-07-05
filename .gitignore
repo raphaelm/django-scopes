@@ -10,4 +10,4 @@ env
 htmlcov/
 *.pyc
 .coverage
-
+venv
