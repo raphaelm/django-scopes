@@ -62,10 +62,11 @@ class Comment(models.Model):
 	text = models.CharField(…)
 ```
 
-In this case, our application will probably be full of statements like
+In this case, our model `Site` acts as the tenant for the blog posts and their comments, hence
+our application will probably be full of statements like
 ``Post.objects.filter(site=current_site)``, ``Comment.objects.filter(post__site=current_site)``,
-or more complex when more flexible permission handling is involved. With django-scopes, we
-engourage you to still write these queries with your custom permission-based filters, but
+or more complex when more flexible permission handling is involved. With **django-scopes**, we
+encourage you to still write these queries with your custom permission-based filters, but
 we add a custom model manager that has knowledge about posts and comments being part of a
 tenant scope:
 
@@ -154,7 +155,7 @@ def fun(…):
     …
 ```
 
-Please note that django-scopes is also active during migrations, so if you are writing a
+Please note that **django-scopes** is also active during migrations, so if you are writing a
 data migration – or have written one in the past! – you'll have to add appropriate scoping
 or use the ``scopes_disabled`` context.
 
@@ -202,7 +203,7 @@ Caveats
 
 ### Admin
 
-django-scopes is not compatible with the django admin out of the box, integration requires a
+**django-scopes** is not compatible with the django admin out of the box, integration requires a
 custom middleware. (If you write one, please open a PR to include it in this package!)
 
 ### Testing
