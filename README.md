@@ -39,7 +39,7 @@ There's nothing required apart from a simple
 Compatibility
 -------------
 
-This library is tested against **Python 3.5-3.8** and **Django 2.1-3.0**.
+This library is tested against **Python 3.8-3.10** and **Django 3.2-4.0**.
 
 Usage
 -----
