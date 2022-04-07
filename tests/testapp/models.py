@@ -35,3 +35,11 @@ class Bookmark(models.Model):
     userid = models.IntegerField()
 
     objects = ScopedManager(site='post__site', user_id='userid')
+
+
+class CommentGroup(models.Model):
+    """ Contrived many-to-many example """
+    site = models.ForeignKey(Site, on_delete=models.CASCADE)
+    comments = models.ManyToManyField(Comment)
+
+    objects = ScopedManager(site='site')
