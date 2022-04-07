@@ -1,12 +1,10 @@
 django-scopes
 =============
 
-[![Build Status](https://travis-ci.com/raphaelm/django-scopes.svg?branch=master)](https://travis-ci.com/raphaelm/django-scopes)
-[![codecov](https://codecov.io/gh/raphaelm/django-scopes/branch/master/graph/badge.svg)](https://codecov.io/gh/raphaelm/django-scopes)
+![Build status](https://github.com/raphaelm/django-scopes/actions/workflows/tests.yml/badge.svg)
 ![PyPI](https://img.shields.io/pypi/v/django-scopes.svg)
 [![Python versions](https://img.shields.io/pypi/pyversions/django-scopes.svg)](https://pypi.org/project/django-scopes/)
 ![PyPI - Django Version](https://img.shields.io/pypi/djversions/django-scopes)
-
 
 Motivation
 ----------
@@ -39,7 +37,7 @@ There's nothing required apart from a simple
 Compatibility
 -------------
 
-This library is tested against **Python 3.5-3.8** and **Django 2.1-3.0**.
+This library is tested against **Python 3.8-3.10** and **Django 3.2-4.0**.
 
 Usage
 -----

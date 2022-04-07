@@ -1,6 +1,5 @@
 pytest
 pytest-django
-tox
 coverage
 codecov
 isort==4.3.4

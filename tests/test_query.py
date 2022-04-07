@@ -3,7 +3,8 @@ from django.db.models import IntegerField, Value
 
 from django_scopes import ScopeError, get_scope, scope, scopes_disabled
 
-from .testapp.models import Bookmark, Comment, Post, Site
+from .testapp.forms import CommentForm, CommentGroupForm
+from .testapp.models import Bookmark, Comment, CommentGroup, Post, Site
 
 
 @pytest.fixture
@@ -39,6 +40,14 @@ def comment1(post1):
 @pytest.fixture
 def comment2(post2):
     return Comment.objects.create(post=post2, text="Cheers!")
+
+
+@pytest.fixture
+def commentgroup(site1, comment1, comment2):
+    group = CommentGroup.objects.create(site=site1)
+    with scopes_disabled():
+        group.comments.set([comment1, comment2])
+    return group
 
 
 @pytest.mark.django_db
@@ -221,3 +230,11 @@ def test_multiple_dimensions(site1, site2, bm2_1, bm1_1, bm1_2):
 
     with scope(site=site1, user_id=1):
         assert list(Bookmark.objects.all()) == [bm1_1]
+
+
+@pytest.mark.django_db
+def test_forms_require_scope(comment1, commentgroup):
+    # honestly, importing the forms is the main test, because that's what usually breaks
+    with pytest.raises(ScopeError):
+        assert CommentForm(instance=comment1)
+        assert CommentGroupForm(instance=commentgroup)
