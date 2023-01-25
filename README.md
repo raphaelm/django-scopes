@@ -199,6 +199,24 @@ with scope(user=request.user.pk):
 Caveats
 -------
 
+### Locking
+
+With django-scopes, a seemingly innocent query like
+
+```python
+Comment.objects.select_for_update().get(pk=3)
+```
+
+could cause unexpected locking across your database, since django-scopes will auto-add one or more ``JOIN`` statements to the query, and joined tables will **also be locked**.
+One possible fix is of course using ``scopes_disabled()``, around this query.
+On most modern databases, there's also a way to specify explicitly which tables you want locked:
+
+```python
+Comment.objects.select_for_update(of=("self",)).get(pk=3)
+```
+
+You can check if your database supports this feature at runtime using ``connection.features.has_select_for_update_of``.
+
 ### Admin
 
 **django-scopes** is not compatible with the django admin out of the box, integration requires a
