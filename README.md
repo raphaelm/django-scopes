@@ -196,6 +196,49 @@ with scope(user=request.user.pk):
 	# do something :)
 ```
 
+### Foreign key consistency
+
+In databases with legacy code or with schemas that are particularly complex, you may encounter a scenario
+where you're referencing multiple related objects, each of which belongs to a scope. For example:
+
+```python
+
+class Site(models.Model):
+    ...
+
+class Post(models.Model):
+    site = models.ForeignKey(Site, ...)
+
+    objects = ScopedManager(site="site")
+
+class CommentRuleSet(models.Model):
+    site = models.ForeignKey(Site, ...)
+    ruleset = models.JSONField(...)
+
+class Comment(models.Model):
+    post = models.ForeignKey(Post, ...)
+    ruleset = models.ForeignKey(CommentRuleSet, ...)
+
+    objects = ScopedManager(site="post__site")
+
+```
+
+It would be problematic if post and ruleset belonged to different scopes in your application. To account for this, you can opt into foreign key consistency checking and update your `ScopedManager` as such:
+
+```python
+class Comment(models.Model):
+    post = models.ForeignKey(Post, ...)
+    ruleset = models.ForeignKey(CommentRuleSet, ...)
+
+    objects = ScopedManager(site=["post__site", "ruleset__site"], enforce_fk_consistency=True)
+```
+
+With `ensure_fk_consistency` enabled, `django_scopes` will ensure that your scopes remain consistent during saves and creates.
+
+**Note**
+
+To ensure consistency, `django_scopes` will traverse down the lookup graph on every save or create. If not tested for, this can lead to many and/or expensive queries in write-heavy applications.
+
 Caveats
 -------
 

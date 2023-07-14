@@ -1,7 +1,35 @@
+from typing import List
+
 from django.db import models
+from django.db.models.base import Model
 
 from .exceptions import ScopeError
 from .state import get_scope
+
+
+def _ensure_scopes(instance: Model, active_scope: Model, scope_lookups: List[str]):
+    """
+    Traverse through the given instance and ensure that all scopes are both
+    met and consistent.
+    """
+
+    scope_pks = {}
+
+    for lookup in scope_lookups:
+        current_value = instance
+        pieces = lookup.split('__')
+
+        for piece in pieces[:-1]:
+            if current_value is None:
+                break
+            current_value = getattr(current_value, piece)
+
+        scope_pks[lookup] = current_value.pk if current_value else None
+
+    filtered_values = [val for val in scope_pks.values() if val is not None]
+
+    if any((val != active_scope.pk for val in filtered_values)):
+        raise ScopeError()
 
 
 class DisabledQuerySet(models.QuerySet):
@@ -64,7 +92,7 @@ class DisabledQuerySet(models.QuerySet):
     values_list = error
 
 
-def ScopedManager(_manager_class=models.Manager, **scopes):
+def ScopedManager(_manager_class=models.Manager, enforce_fk_consistency=False, **scopes):
     required_scopes = set(scopes.keys())
 
     class Manager(_manager_class):
@@ -85,7 +113,12 @@ def ScopedManager(_manager_class=models.Manager, **scopes):
                     if isinstance(current_value, (list, tuple)):
                         filter_kwargs[scopes[dimension] + '__in'] = current_value
                     elif current_value is not None:
-                        filter_kwargs[scopes[dimension]] = current_value
+                        scope_value = scopes[dimension]
+                        if isinstance(scope_value, (list, tuple)):
+                            for scope_value in scopes[dimension]:
+                                filter_kwargs[scope_value] = current_value
+                        else:
+                            filter_kwargs[scopes[dimension]] = current_value
                 return super().get_queryset().filter(**filter_kwargs)
 
         def all(self):
@@ -93,5 +126,31 @@ def ScopedManager(_manager_class=models.Manager, **scopes):
             if isinstance(a, DisabledQuerySet):
                 a = a.all()
             return a
+
+        def _check_fk_consistency(self, instance: Model, **kwargs):
+            current_scope = get_scope()
+            if not current_scope.get('_enabled', True):
+                return
+
+            missing_scopes = required_scopes - set(current_scope.keys())
+            if missing_scopes:
+                raise ScopeError("A scope on dimension(s) {} needs to be active to create or update objects.".format(
+                    ', '.join(missing_scopes)
+                ))
+
+            for dimension in required_scopes:
+                current_value = current_scope[dimension]
+                scope_value = scopes[dimension]
+
+                _ensure_scopes(instance, current_value, scope_value)
+
+        def contribute_to_class(self, model, name: str) -> None:
+            super().contribute_to_class(model, name)
+            if enforce_fk_consistency:
+                models.signals.pre_save.connect(
+                    self._check_fk_consistency,
+                    sender=model,
+                    dispatch_uid='django_scopes.check_fk_consistency.{}'.format(model.__name__),
+                )
 
     return Manager()

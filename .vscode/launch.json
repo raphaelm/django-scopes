@@ -1,0 +1,15 @@
+{
+
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "PyTest",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "subProcess": true,
+            "justMyCode": false,
+            "django": true,
+        }
+    ]
+}
