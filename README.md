@@ -237,7 +237,7 @@ With `ensure_fk_consistency` enabled, `django_scopes` will ensure that your scop
 
 **Note**
 
-To ensure consistency, `django_scopes` will traverse down the lookup graph on every save or create. If not tested for, this can lead to many and/or expensive queries in write-heavy applications.
+To ensure consistency, `django_scopes` will traverse down the lookup graph on every create, as well as every save where a scoped related item has changed. If not tested for, this can lead to many and/or expensive queries in write-heavy applications.
 
 Caveats
 -------

@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('text', models.TextField()),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='testapp.Post')),
+                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, null=True, to='testapp.Post')),
             ],
         ),
     ]
