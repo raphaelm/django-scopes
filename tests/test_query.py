@@ -1,10 +1,17 @@
+
+from unittest import mock
+
 import pytest
 from django.db.models import IntegerField, Value
 
-from django_scopes import ScopeError, get_scope, scope, scopes_disabled
+from django_scopes import (
+    InconsistentScope, ScopeError, get_scope, scope, scopes_disabled,
+)
 
 from .testapp.forms import CommentForm, CommentGroupForm
-from .testapp.models import Bookmark, Comment, CommentGroup, Post, Site
+from .testapp.models import (
+    Bookmark, BookmarkComment, Comment, CommentGroup, Post, Site,
+)
 
 
 @pytest.fixture
@@ -238,3 +245,101 @@ def test_forms_require_scope(comment1, commentgroup):
     with pytest.raises(ScopeError):
         assert CommentForm(instance=comment1)
         assert CommentGroupForm(instance=commentgroup)
+
+
+@pytest.mark.django_db
+def test__consistentfk__inconsistent_new_obj__raises_error(post1, comment2):
+    bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+
+    assert bookmark1.post != comment2.post
+
+    with scope(site=bookmark1.post.site):
+        with pytest.raises(InconsistentScope):
+            BookmarkComment.objects.create(bookmark=bookmark1, comment=comment2, vote_count=1)
+
+
+@pytest.mark.django_db
+def test__consistentfk__no_scope__raises_error(post1, comment2):
+    bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+
+    assert bookmark1.post != comment2.post
+
+    with pytest.raises(ScopeError):
+        BookmarkComment.objects.create(bookmark=bookmark1, comment=comment2, vote_count=1)
+
+
+@pytest.mark.django_db
+def test__consistentfk__no_scope__scopes_disabled__does_nothing(post1, comment2):
+    bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+
+    assert bookmark1.post != comment2.post
+
+    with scopes_disabled():
+        BookmarkComment.objects.create(bookmark=bookmark1, comment=comment2, vote_count=1)
+
+
+@pytest.mark.django_db
+def test__consistentfk__inconsistent__existing_object__raises_error(post1, comment1, comment2):
+    with scope(site=post1.site):
+        bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+        bookmark_comment = BookmarkComment.objects.create(bookmark=bookmark1, comment=comment1, vote_count=1)
+
+        assert bookmark_comment.bookmark.post == bookmark_comment.comment.post
+
+        bookmark_comment.comment = comment2
+
+        assert bookmark_comment.bookmark.post != bookmark_comment.comment.post
+
+        with pytest.raises(InconsistentScope):
+            bookmark_comment.save()
+
+
+@pytest.mark.django_db
+def test__consistentfk__existing_object__resaved__no_scoped_field_change__does_nothing(post1, comment1, comment2):
+    with scope(site=post1.site):
+        bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+        bookmark_comment = BookmarkComment.objects.create(bookmark=bookmark1, comment=comment1, vote_count=1)
+
+        with mock.patch("django_scopes.manager._ensure_scopes") as mock_ensure_scopes:
+            bookmark_comment.vote_count = 2  # Change a non-scoped field
+            bookmark_comment.save()
+
+        mock_ensure_scopes.assert_not_called()
+
+
+@pytest.mark.django_db
+def test__consistentfk__existing_object__resaved__scoped_field_nullified__does_nothing(post1, comment1, comment2):
+    with scope(site=post1.site):
+        bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+        bookmark_comment = BookmarkComment.objects.create(bookmark=bookmark1, comment=comment1, vote_count=1)
+
+        with mock.patch("django_scopes.manager._ensure_scopes") as mock_ensure_scopes:
+            bookmark_comment.comment = None  # Nullify a scoped field
+            bookmark_comment.save()
+
+        mock_ensure_scopes.assert_not_called()
+
+
+@pytest.mark.django_db
+def test__consistentfk__existing_object__null_value__ok(post1, comment1):
+    with scope(site=post1.site):
+        bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+        bookmark_comment = BookmarkComment.objects.create(bookmark=bookmark1, comment=comment1, vote_count=1)
+
+        assert bookmark_comment.bookmark.post == bookmark_comment.comment.post
+
+        bookmark_comment.comment = None
+
+        bookmark_comment.save()
+
+
+@pytest.mark.django_db
+def test__consistentfk__existing_object__resaved__nested_null_value__ok(post1, comment1, comment2):
+    comment2.post = None
+    comment2.save()
+    with scope(site=post1.site):
+        bookmark1 = Bookmark.objects.create(post=post1, userid=1)
+        bookmark_comment = BookmarkComment.objects.create(bookmark=bookmark1, comment=comment1, vote_count=1)
+
+        bookmark_comment.comment = comment2
+        bookmark_comment.save()

@@ -2,6 +2,8 @@ from django.db import models
 
 from django_scopes import ScopedManager
 
+test_enforce_fk_consistency = True
+
 
 class PostManager(models.Manager):
 
@@ -24,7 +26,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True)
     text = models.TextField()
 
     objects = ScopedManager(site='post__site')
@@ -43,3 +45,12 @@ class CommentGroup(models.Model):
     comments = models.ManyToManyField(Comment)
 
     objects = ScopedManager(site='site')
+
+
+class BookmarkComment(models.Model):
+    bookmark = models.ForeignKey(Bookmark, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True)
+
+    vote_count = models.IntegerField(default=0)
+
+    objects = ScopedManager(site=['bookmark__post__site', 'comment__post__site'], enforce_fk_consistency=test_enforce_fk_consistency)
