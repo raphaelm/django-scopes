@@ -329,6 +329,10 @@ class Site(models.Model):
             super().validate_unique(*args, **kwargs)
 ```
 
+## Security
+
+If you discover a security issue, please contact us at security@pretix.eu and see our [Responsible Disclosure Policy](https://docs.pretix.eu/trust/security/disclosure/) further information.
+
 ## Further reading
 
 If you'd like to read more about the practical use of django-scopes, there is a [blog
