@@ -1,0 +1,41 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=77.0"]
+
+[project]
+name = "django-scopes"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+description = "Scope queries in multi-tenant django applications"
+readme = "README.md"
+authors = [{ name = "Raphael Michel", email = "mail@raphaelmichel.de" }]
+keywords = [
+  "database",
+  "models",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Other Audience",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Framework :: Django",
+  "Framework :: Django :: 5.2",
+  "Framework :: Django :: 6.0",
+]
+requires-python = ">=3.11"
+dependencies = [
+  "django>=3.2",
+]
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://github.com/raphaelm/django-scopes"
+
+[tool.setuptools.dynamic]
+version = { attr = "django_scopes.version" }
+
+[tool.setuptools.packages.find]
+include = ["django_scopes*"]
