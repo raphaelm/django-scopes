@@ -256,3 +256,12 @@ def test_forms_require_scope(comment1, commentgroup):
     with pytest.raises(ScopeError):
         assert CommentForm(instance=comment1)
         assert CommentGroupForm(instance=commentgroup)
+
+
+@pytest.mark.django_db
+def test_override_scope_on_manager(site1, site2, post1, post2):
+    with scope(site=site1):
+        assert list(Post.objects.all()) == [post1]
+        assert list(Post.objects.with_scope(site=site2).all()) == [post2]
+        assert list(Post.objects.with_scope(site=None).all()) == [post1, post2]
+        assert list(Post.objects.with_scopes_disabled().all()) == [post1, post2]
