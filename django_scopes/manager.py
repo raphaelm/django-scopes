@@ -1,3 +1,5 @@
+import copy
+
 from django.db import models
 
 from .exceptions import ScopeError
@@ -71,8 +73,22 @@ def ScopedManager(_manager_class=models.Manager, **scopes):
         def __init__(self):
             super().__init__()
 
+        def with_scope(self, **scope):
+            cloned = copy.copy(self)
+            scope['_enabled'] = True
+            cloned._override_scope = scope
+            return cloned
+
+        def with_scopes_disabled(self):
+            cloned = copy.copy(self)
+            cloned._override_scope = {'_enabled': False}
+            return cloned
+
         def get_queryset(self):
-            current_scope = get_scope()
+            if hasattr(self, '_override_scope'):
+                current_scope = self._override_scope
+            else:
+                current_scope = get_scope()
             if not current_scope.get('_enabled', True):
                 return super().get_queryset()
             missing_scopes = required_scopes - set(current_scope.keys())

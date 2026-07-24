@@ -157,6 +157,15 @@ Please note that **django-scopes** is also active during migrations, so if you a
 data migration – or have written one in the past! – you'll have to add appropriate scoping
 or use the ``scopes_disabled`` context.
 
+You can modify the scope for a single query:
+
+```python
+with scope(site=[site1]):
+	Comment.objects.all()  # scoped to site1
+    Comment.objects.with_scope(site=site2).all()  # scoped to site 2
+    Comment.objects.with_scopes_disabled().all()  # unscoped
+```
+
 ### Custom manager classes
 
 If you were already using a custom manager class, you can pass it to a `ScopedManager` with the `_manager_class`
