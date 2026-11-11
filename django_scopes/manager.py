@@ -5,21 +5,36 @@ from django.db import models
 from .exceptions import ScopeError
 from .state import get_scope
 
+ALLOWED_METHODS = [
+    # Allowed
+    "using",
+    "none",
+    "create",
+    "bulk_create",
+    "bulk_update",
+    # Required for proper functioning
+    "error",
+    "query",
+    "model",
+    "db",
+    "ordered",
+]
+
 
 class DisabledQuerySet(models.QuerySet):
 
     def __init__(self, *args, **kwargs):
-        self.missing_scopes = kwargs.pop('missing_scopes', None)
+        self.__missing_scopes = kwargs.pop('missing_scopes', None)
         super().__init__(*args, **kwargs)
 
     def error(self, *args, **kwargs):
         raise ScopeError("A scope on dimension(s) {} needs to be active for this query.".format(
-            ', '.join(self.missing_scopes)
+            ', '.join(self.__missing_scopes)
         ))
 
     def _clone(self):
         c = super()._clone()
-        c.missing_scopes = self.missing_scopes
+        c.__missing_scopes = self.__missing_scopes
         return c
 
     def none(self):
@@ -32,38 +47,18 @@ class DisabledQuerySet(models.QuerySet):
         c._fields = self._fields
         return c.none()
 
-    # We protect disable everything except for .using(), .none() and .create()
+    def __getattribute__(self, item):
+        if item in ALLOWED_METHODS or item.startswith("_"):
+            return super().__getattribute__(item)
+        return self.error
+
+    def __repr__(self):
+        return "<[QuerySet disabled by scopes]>"
+
     __bool__ = error
     __getitem__ = error
     __iter__ = error
     __len__ = error
-    __erpr__ = error
-    all = error
-    aggregate = error
-    annotate = error
-    count = error
-    earliest = error
-    complex_filter = error
-    select_for_update = error
-    filter = error
-    first = error
-    get = error
-    get_or_create = error
-    update_or_create = error
-    delete = error
-    dates = error
-    datetimes = error
-    iterator = error
-    last = error
-    latest = error
-    only = error
-    order_by = error
-    reverse = error
-    union = error
-    update = error
-    raw = error
-    values = error
-    values_list = error
 
 
 def ScopedManager(_manager_class=models.Manager, **scopes):

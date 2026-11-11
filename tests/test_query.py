@@ -61,6 +61,10 @@ def test_require_scope():
         Post.objects.count()
     with pytest.raises(ScopeError):
         Post.objects.all()
+    with pytest.raises(ScopeError):
+        Post.objects.exists()
+    with pytest.raises(ScopeError):
+        Post.objects.explain()
 
 
 @pytest.mark.django_db
