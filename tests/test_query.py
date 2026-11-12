@@ -61,6 +61,23 @@ def test_require_scope():
         Post.objects.count()
     with pytest.raises(ScopeError):
         Post.objects.all()
+    with pytest.raises(ScopeError):
+        Post.objects.exists()
+    with pytest.raises(ScopeError):
+        Post.objects.explain()
+    with pytest.raises(ScopeError):
+        list(Post.objects.using("default"))
+    with pytest.raises(ScopeError):
+        bool(Post.objects.using("default"))
+    with pytest.raises(ScopeError):
+        len(Post.objects.using("default"))
+    with pytest.raises(ScopeError):
+        Post.objects.using("default")[2]
+
+
+@pytest.mark.django_db
+def test_repr():
+    assert repr(Post.objects.using("default")) == "<[QuerySet disabled by scopes]>"
 
 
 @pytest.mark.django_db
