@@ -1,7 +1,10 @@
 import pytest
+from django.db import connection
 from django.db.models import IntegerField, Value
 
-from django_scopes import ScopeError, get_scope, scope, scopes_disabled
+from django_scopes import (
+    ScopeError, UnsafeLockingError, get_scope, scope, scopes_disabled,
+)
 
 from .testapp.forms import CommentForm, CommentGroupForm
 from .testapp.models import Bookmark, Comment, CommentGroup, Post, Site
@@ -282,3 +285,29 @@ def test_override_scope_on_manager(site1, site2, post1, post2):
         assert list(Post.objects.with_scope(site=site2).all()) == [post2]
         assert list(Post.objects.with_scope(site=None).all()) == [post1, post2]
         assert list(Post.objects.with_scopes_disabled().all()) == [post1, post2]
+
+
+@pytest.mark.django_db
+def test_select_for_update(site1, site2, post1, post2):
+    if not connection.features.has_select_for_update_of:
+        pytest.skip("Not supported on this database")
+    with scope(site=site1):
+        with pytest.raises(UnsafeLockingError):
+            list(Post.objects.filter(site=site1).select_for_update().select_related('site'))
+        with pytest.raises(UnsafeLockingError):
+            list(Post.objects.filter(site=site1).select_related('site').select_for_update())
+        assert list(Post.objects.filter(site=site1).select_for_update(of=('self',)))
+    with scopes_disabled():
+        assert list(Post.objects.filter(site=site1).select_for_update())
+
+
+@pytest.mark.django_db
+def test_select_for_update_unsupported_database(site1, site2, post1, post2):
+    if connection.features.has_select_for_update_of:
+        pytest.skip("Not supported on this database")
+    with scope(site=site1):
+        assert list(Post.objects.filter(site=site1).select_for_update().select_related('site'))
+        assert list(Post.objects.filter(site=site1).select_related('site').select_for_update())
+        assert list(Post.objects.filter(site=site1).select_for_update(of=('self',)))
+    with scopes_disabled():
+        assert list(Post.objects.filter(site=site1).select_for_update())
