@@ -13,10 +13,24 @@ jobs:
     strategy:
       matrix:
         python-version: [3.11, 3.12, 3.13, 3.14]
+        database: [sqlite, postgres]
         django-version: ["5.2", "6.0"]
         exclude:
           - django-version: "6.0"
             python-version: "3.11"
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -24,10 +38,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Dependencies
-        run: python -m pip install -Ur requirements_dev.txt
+        run: python -m pip install -Ur requirements_dev.txt psycopg
       - name: Install Django
         run: python -m pip install django==${{ matrix.django-version }}
       - name: Run tests
         run: coverage run -m pytest tests
+        env:
+          TESTDB: ${{ matrix.database }}
       - name: Assure coverage
         run: coverage report --fail-under=100
