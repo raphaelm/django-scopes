@@ -66,7 +66,7 @@ class DisabledQuerySet(models.QuerySet):
 def build_scoped_queryset(_base_class=models.QuerySet, *args, **kwargs):
     class ScopedQuerySet(_base_class):
         def select_for_update(self, nowait: bool = False, skip_locked: bool = False, of: Sequence[str] = (),
-                              no_key: bool = False) -> Self:
+                              no_key: bool = False) -> Self:  # pragma: no cover -- different branch per databases
             if not connections[self._db or "default"].features.has_select_for_update_of:
                 return super().select_for_update(nowait, skip_locked, of, no_key)
 
