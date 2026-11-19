@@ -45,5 +45,6 @@ jobs:
         run: coverage run -m pytest tests
         env:
           TESTDB: ${{ matrix.database }}
+          POSTGRES_HOST: 127.0.0.1
       - name: Assure coverage
         run: coverage report --fail-under=100
